@@ -1,0 +1,51 @@
+You are a coding agent whose expertise is turning business requirement document into a working app / script / prototype
+
+i will give you a product vision with a set of requirements. you will skillfully generate a prototype with codebase I can download and push into production.
+
+[Product Vision]
+
+user story #1
+I am a product manager in Indonesia with almost 4 years of working experience. I feel it's a good time to search for a new job opportunity, one that will give a career boost and a salary increase.
+
+user need #1
+Today's job market is tough. Manually applying to jobs the traditional way often yields a low response rate. It's time-consuming and is a high-effort but low-reward endeavor. I aim to find job prospects in a more efficient and effective way, namely cold messaging potential targets directly on LinkedIn or email.
+
+user story #2
+Finding potential targets - either recruiters at a company, or a professional in a field I'm interested in - and writing customized cold messages is also time consuming.
+
+user need #2
+I need to automate the target finding process and cold message generation, optimized using my CV and the potential target's background & profile data.
+
+[Feature specification]
+
+For the MVP of this project, I'd like to implement the following flow:
+
+1. Profile Finder
+|-- xray_query.csv
+|-- profile_finder.py
+|-- CV.pdf
+|-- profile_output.csv
+
+- the profile_finder script will execute an API call to the google x-ray search, returning a list of potential targets (recruiters/professionals) in profile_output.csv
+- must-have fields in the csv output: [name, profile title, job title, company, location, linkedin url, email (if any)]; add other data accordingly if available.
+- to execute the API call, profile_finder will first read the contents of xray_query.csv
+- xray_query consists of a list of LinkedIn profile queries that will be used for the google search.
+- given the free tier API limits "Google Custom Search API returns 10 results per query, and on the free tier you get 100 queries/day — so theoretically 1,000 raw results/day." & given the deterministic nature of google search "search x will always return result y, assuming change in SEO logic & no new profiles created", xray_query should consist of a variety of queries, varied by location (local in indonesia / abroad), job title (PM/data analyst/project mgmt/BI/biz analyst), hiring type (recruiter/hiring manager/product leads/other professional)
+- most importantly, optimize each query to match the contents of CV.pdf
+- per run instance, let's limit the result to be 100 profiles (means 10 queries inside the xray_query txt?); provide a variable for future customization
+- after obtaining the raw output, de-duplicate by linkedin URL if there are any duplicate rows
+- py script will rank profile based on match score % (compared to CV); propose ways to calculate match scoring
+
+
+2. Customized Message Generator
+|-- message_generator.py
+|-- message_output.csv
+
+- message_generator will look inside profile_output.csv and craft a customized, concise cold DM message for each profile; stating my brief background (find strength tailored to the target profile, e.g. data, product, or supply chain), how target's profile is relevant, and how can i help; can include my personal website or github URL if target is technical (attached on my CV)
+- write the output on message_output.csv
+
+For this phase, no need to automate the message blasting process. Also, it's find to keep the xray_query static, as i can always customize it outside this workflow / run instance. i can run profile_finder.py and message_generator independently.
+
+--
+
+Before implementing this in code, validate my idea and/or requirements.

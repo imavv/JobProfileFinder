@@ -1,0 +1,108 @@
+================================================================================
+CHANGE REQUEST #001: Search API Migration
+================================================================================
+Date: 2026-03-03
+Status: Implemented
+
+================================================================================
+SUMMARY
+================================================================================
+Migrated from Google Custom Search JSON API to Serper.dev API for LinkedIn
+profile discovery functionality.
+
+================================================================================
+REASON FOR CHANGE
+================================================================================
+Google Custom Search JSON API was closed to new customers as of February 2026.
+From Google's official documentation (updated 18 Feb 2026):
+
+"The Custom Search JSON API is closed to new customers. Vertex AI Search is a
+favorable alternative for searching up to 50 domains. Alternatively, if your
+use case necessitates full web search, contact us to express your interest in
+and get more information about our full web search solution. Existing Custom
+Search JSON API customers have until January 1, 2027 to transition to an
+alternative solution."
+
+================================================================================
+BEFORE (Google Custom Search)
+================================================================================
+
+config.py:
+- GOOGLE_API_KEY = "your-google-api-key"
+- GOOGLE_CSE_ID = "your-custom-search-engine-id"
+
+profile_finder.py:
+- Used google-api-python-client library
+- Called Google Custom Search API via googleapiclient.discovery.build()
+- API endpoint: customsearch.googleapis.com
+- Max 10 results per query
+- Required: Google Cloud Console project + Custom Search Engine setup
+
+requirements.txt:
+- google-api-python-client>=2.100.0
+
+Free tier limitations:
+- 100 queries/day
+- 10 results per query
+- Required complex setup (Cloud Console + Programmable Search Engine)
+
+================================================================================
+AFTER (Serper.dev)
+================================================================================
+
+config.py:
+- SERPER_API_KEY = "your-serper-api-key"
+
+profile_finder.py:
+- Uses requests library (simpler HTTP calls)
+- Calls Serper.dev API via POST request
+- API endpoint: https://google.serper.dev/search
+- Up to 100 results per query
+- Required: Just sign up at serper.dev and get API key
+
+requirements.txt:
+- requests>=2.31.0 (replaces google-api-python-client)
+
+Free tier limitations:
+- 2,500 searches (one-time credit, not daily)
+- Up to 100 results per query
+- Simple setup (just API key)
+
+================================================================================
+FILES MODIFIED
+================================================================================
+1. config.py
+   - Removed: GOOGLE_API_KEY, GOOGLE_CSE_ID
+   - Added: SERPER_API_KEY
+   - Updated setup instructions in docstring
+
+2. profile_finder.py
+   - Removed: google-api-python-client imports
+   - Added: requests library for HTTP calls
+   - Rewrote execute_search() function for Serper.dev API
+   - Removed: create_search_client() function (no longer needed)
+   - Updated error handling for Serper-specific HTTP errors
+
+3. requirements.txt
+   - Removed: google-api-python-client>=2.100.0
+   - Added: requests>=2.31.0
+
+================================================================================
+MIGRATION STEPS FOR USERS
+================================================================================
+1. Sign up at https://serper.dev/ (free account)
+2. Copy API key from Dashboard
+3. Update config.py: SERPER_API_KEY = "your-api-key"
+4. Run: pip install -r requirements.txt
+5. Delete __pycache__ folder to clear old compiled files
+6. Run: python main.py find --queries 1
+
+================================================================================
+TESTING
+================================================================================
+Verified that:
+- API key validation works (shows helpful error if not configured)
+- Search queries return LinkedIn profile results
+- Profile parsing (name, title, company, location) works correctly
+- Match scoring algorithm unchanged
+- CSV output format unchanged
