@@ -2,6 +2,7 @@
 Profile Finder - Serper.dev API integration for LinkedIn profile discovery
 """
 
+import csv
 import re
 from typing import Optional
 
@@ -12,6 +13,33 @@ import config
 
 
 SERPER_API_URL = "https://google.serper.dev/search"
+
+
+def load_queries_from_csv(filepath: str, top_n: Optional[int] = None) -> list[dict]:
+    """Load queries from a CSV file (ranked_queries.csv or cv_queries.csv format)."""
+    queries = []
+
+    with open(filepath, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            query_text = row.get("query", "")
+            if not query_text:
+                continue
+
+            query_type = row.get("category", "csv_loaded")
+            if "rank" in row:
+                query_type = "ranked"
+
+            queries.append({
+                "query": query_text,
+                "type": query_type,
+                "metadata": row,
+            })
+
+    if top_n and top_n > 0:
+        queries = queries[:top_n]
+
+    return queries
 
 
 def execute_search(query: str, num_results: int = 10) -> list[dict]:
@@ -53,6 +81,10 @@ def execute_search(query: str, num_results: int = 10) -> list[dict]:
             profile_data["linkedin_url"] = url
             profile_data["raw_title"] = title
             profile_data["raw_snippet"] = snippet
+
+            # Extract attributes if available
+            attributes = item.get("attributes", [])
+            profile_data["attributes"] = "; ".join(attributes) if attributes else ""
 
             results.append(profile_data)
 
@@ -172,6 +204,7 @@ def find_profiles(
     queries: list[dict],
     cv_keywords: Optional[list[str]] = None,
     output_path: Optional[str] = None,
+    results_per_query: Optional[int] = None,
 ) -> pd.DataFrame:
     """
     Execute queries and find LinkedIn profiles.
@@ -180,12 +213,14 @@ def find_profiles(
         queries: List of query dicts from query_generator
         cv_keywords: Keywords from CV for match scoring
         output_path: Path to save CSV (defaults to config.PROFILE_OUTPUT_PATH)
+        results_per_query: Number of results per query (defaults to config.RESULTS_PER_QUERY)
 
     Returns:
         DataFrame with profile data
     """
     cv_keywords = cv_keywords or []
     output_path = output_path or config.PROFILE_OUTPUT_PATH
+    results_per_query = results_per_query or config.RESULTS_PER_QUERY
 
     all_profiles = []
     seen_urls = set()
@@ -199,7 +234,7 @@ def find_profiles(
         print(f"  [{i}/{len(queries)}] {query_type}: {query[:60]}...")
 
         try:
-            results = execute_search(query)
+            results = execute_search(query, num_results=results_per_query)
 
             for profile in results:
                 url = profile["linkedin_url"]
@@ -252,6 +287,7 @@ def find_profiles(
         "linkedin_url",
         "email",
         "match_score",
+        "attributes",
         "query_source",
     ]
     # Only include columns that exist

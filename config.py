@@ -18,7 +18,7 @@ API Keys Setup Instructions:
 """
 
 # Serper.dev API (Google Search)
-SERPER_API_KEY = "YOUR_SERPER_API_KEY_HERE"
+SERPER_API_KEY = "819898aee815aa3c0cf7762a22b32200a13f736c"
 
 # Anthropic Claude API
 ANTHROPIC_API_KEY = "YOUR_ANTHROPIC_API_KEY_HERE"
@@ -31,6 +31,15 @@ RESULTS_PER_QUERY = 10
 CV_PATH = "CV.pdf"
 PROFILE_OUTPUT_PATH = "profile_output.csv"
 MESSAGE_OUTPUT_PATH = "message_output.csv"
+
+# Query Generation Paths
+QUERIES_FOLDER = "queries"
+QUERY_PARAMS_PATH = "queries/query_params.txt"
+RANKED_QUERIES_PATH = "queries/ranked_queries.csv"
+CV_QUERIES_PATH = "queries/cv_queries.csv"
+
+# Similarity Settings
+TFIDF_MAX_FEATURES = 5000
 
 # Query Parameters
 ROLES = [

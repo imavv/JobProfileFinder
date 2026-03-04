@@ -1,0 +1,71 @@
+Change Request: Query Generation Revamp
+========================================
+
+Summary
+-------
+Revamped the query generator to support two new flows:
+1. Permutation ranking - Generate all query permutations from user-defined parameter lists, rank by CV embedding similarity using sentence-transformers
+2. Direct CV generation - Rule-based query extraction from CV content with two categories (highly_specific and broadly_similar)
+
+All input/output files are organized in a new `queries/` folder.
+
+Reason for Change
+-----------------
+The original query generation was rigid and relied on hardcoded configurations. Users needed:
+- Ability to define custom parameter combinations (locations, seniorities, roles)
+- Intelligent ranking of queries based on CV relevance using semantic similarity
+- Two-tier query generation: precise matches for networking with similar professionals, and broader exploratory queries
+
+Before State
+------------
+- query_generator.py used hardcoded templates and config values
+- No embedding-based ranking capability
+- No organized input/output file structure for queries
+- CLI only supported --queries and --query flags
+
+After State
+-----------
+- New embedding_utils.py with TF-IDF similarity using scikit-learn (no heavy dependencies)
+- Rewritten query_generator.py with:
+  - parse_query_params() - parses queries/query_params.txt format
+  - generate_permutations() - creates all location x seniority x role combinations
+  - rank_queries_by_cv() - embeds CV and queries, ranks by cosine similarity
+  - generate_cv_specific_queries() - highly_specific category from recent experience
+  - generate_cv_broad_queries() - broadly_similar category from skills/keywords
+- New queries/ folder with query_params.txt, ranked_queries.csv, cv_queries.csv
+- New CLI commands: query-rank, query-cv
+- Updated find command with --query-file, --top, --results flags
+
+Files Modified
+--------------
+- requirements.txt (added sentence-transformers)
+- config.py (added QUERIES_FOLDER, QUERY_PARAMS_PATH, RANKED_QUERIES_PATH, CV_QUERIES_PATH, EMBEDDING_MODEL)
+- embedding_utils.py (NEW - embedding utilities)
+- query_generator.py (REWRITTEN - new architecture)
+- main.py (added query-rank, query-cv commands; updated find command)
+- profile_finder.py (added load_queries_from_csv, results_per_query param)
+- CLAUDE.md (updated commands and architecture docs)
+- queries/query_params.txt (NEW - sample params file)
+
+Testing Steps
+-------------
+1. Install new dependency:
+   pip install scikit-learn
+
+2. Test Flow 1 (Permutation Ranking):
+   python main.py query-rank --params queries/query_params.txt --cv CV.pdf
+   # Verify queries/ranked_queries.csv is created with similarity scores
+
+3. Test Flow 2 (CV Query Generation):
+   python main.py query-cv --cv CV.pdf --specific 5 --broad 5
+   # Verify queries/cv_queries.csv has queries in two categories
+
+4. Test Integration:
+   python main.py find --query-file queries/ranked_queries.csv --top 5 --results 10
+   # Verify profile_output.csv is created
+
+Notes
+-----
+- Uses TF-IDF vectorization (no heavy ML dependencies like PyTorch)
+- Legacy functions (generate_queries, generate_queries_from_cv) preserved for backwards compatibility
+- Existing find/generate/run commands continue to work as before

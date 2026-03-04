@@ -1,0 +1,18 @@
+i want to revamp how the query generator works.
+
+we're going to build 2 flows of query generation:
+
+1. Permutation ranking based on cv similarity
+- we're going to standardize the query format to be: site:linkedin.com/in [location] [seniority] [role]
+- to run the query generator, user first needs to specify a list of location, seniority, and role values in a .txt file. this will be used to generate the permutations
+- for each query permutation, run them against CV.pdf and rank based on similarity --> output query rank file csv
+- using this ranked query list, user can run the profile_finder with parameters like (top 10 query, 10 top results per each query --> 100 profile result)
+
+2. generate queries directly from CV
+- bucket into 2 categories: highly cv-specific (high weightage on recent experience/employer), broadly cv similar
+- by default generate 5 unique queries for each category, but can customize using parameter
+- like flow #1, output query into a csv file
+
+all these input/output files are organized into a folder "queries"
+
+write concise comments on the codebase as a user guide.

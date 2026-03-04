@@ -1,0 +1,14 @@
+[locations]
+Jakarta
+Singapore
+Europe
+
+[seniority]
+Senior
+Lead
+Head
+
+[roles]
+Product Manager
+Data Analyst
+Business Analyst
